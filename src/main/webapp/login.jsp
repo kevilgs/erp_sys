@@ -23,7 +23,7 @@
     
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body {
-            background: url('https://i.pinimg.com/1200x/c0/4e/9f/c04e9fdc3b3645d1e34183344b9cd0e7.jpg') no-repeat center center fixed;
+            background: url('images/file.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: Poppins;
         }
@@ -56,10 +56,10 @@
             padding: 20px;
             text-align: center;">
             <img
-                src="https://i.pinimg.com/1200x/2b/4d/21/2b4d21da6cb5569b537e4c468c59516e.jpg"
+                src="images/tj.jpg"
                 class=" rounded-circle"
                 alt=""
-                height="55"
+                height="60"
                 width="60"
             />
             <div class="mt-2" style="font-family: Poppins ;font-weight: 600; font-size: 20px; color: white;">
@@ -98,7 +98,7 @@
                 </div>
                 <div><button type="submit" class="btn btn-primary col-12 "  style="font-family: Poppins ;font-weight: 600; font-size: 20px;">Login</button></div>
                 <div class="mt-3" style="font-family: Poppins ;font-weight: 500; font-size: 17px; color: white;">
-                    <span>Don't have an Account ? <a href="register.html" style="color: rgb(0, 0, 0);">Register</a></span>
+                    <span>Don't have an Account ? <a href="Register.jsp" style="color: rgb(0, 0, 0);">Register</a></span>
                 </div>
                 
                 
