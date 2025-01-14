@@ -29,10 +29,24 @@ public class Admin_panel_user_manage extends HttpServlet {
 		String flag = request.getParameter("button");
 		Admin_panel_user_manage_pojo pojo = new Admin_panel_user_manage_pojo();
 		
-		
+		pojo.setId(Integer.parseInt(request.getParameter("id")));
 		pojo.setMail(request.getParameter("mailId"));
+		pojo.setName(request.getParameter("name"));
+		pojo.setPword(request.getParameter("pword"));
+		pojo.setRole(request.getParameter("role"));
 		
-		pojo.activateUser(pojo);
+		
+		if ("activate".equals(flag)) {
+			pojo.activateUser(pojo);
+			
+		}else if("deactivate".equals(flag)) {
+			
+			pojo.deactivateUser(pojo);
+			
+		}else if("edit".equals(flag)) {
+			
+			pojo.editUserDetails(pojo);
+		}
 		
 
 }
