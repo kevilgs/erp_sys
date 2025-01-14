@@ -43,4 +43,4 @@ public class Admin_panel_prod_manage extends HttpServlet {
 		}
 	}
 
-}
+} 
