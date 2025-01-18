@@ -6,82 +6,302 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Sales Trend Analysis</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Trend Analysis and ABC Classification</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 20px;
+        }
+        .chart-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <%
-        // Get the JSON string from request attribute
         String jsonData = (String) request.getAttribute("salesTrendData");
-        
-        // If null (direct JSP access), get it from POJO
-        //if(jsonData == null) {
-        //    Admin_dash_pojo pojo = new Admin_dash_pojo();
-        //    jsonData = pojo.getSalesTrend();
-        //}
-        
-        // Create Gson instance
         Gson gson = new Gson();
-        
-        // Parse JSON string into array of objects
-        JsonArray jsonArray = JsonParser.parseString(jsonData).getAsJsonArray();
-        
-        // Create data points array for CanvasJS
-        StringBuilder dataPoints = new StringBuilder();
-        dataPoints.append("[");
-        
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject obj = jsonArray.get(i).getAsJsonObject();
-            String month = obj.get("month").getAsString();
-            JsonElement percentageChange = obj.get("percentage_change");
-            
-            dataPoints.append("{");
-            dataPoints.append("label: '" + month + "',");
-            
-            // Handle null percentage_change for first month
-            if (percentageChange.isJsonNull()) {
-                dataPoints.append("y: null");
-            } else {
-                dataPoints.append("y: " + percentageChange.getAsDouble());
-            }
-            
-            dataPoints.append("}");
-            
-            if (i < jsonArray.size() - 1) {
-                dataPoints.append(",");
+        JsonArray salesTrendArray = JsonParser.parseString(jsonData).getAsJsonArray();
+        StringBuilder salesTrendLabels = new StringBuilder();
+        StringBuilder salesTrendData = new StringBuilder();
+
+        salesTrendLabels.append("[");
+        salesTrendData.append("[");
+
+        for (int i = 0; i < salesTrendArray.size(); i++) {
+            JsonObject obj = salesTrendArray.get(i).getAsJsonObject();
+            salesTrendLabels.append("'" + obj.get("month").getAsString() + "'");
+            salesTrendData.append(obj.get("percentage_change").isJsonNull() ? "null" : obj.get("percentage_change").getAsDouble());
+
+            if (i < salesTrendArray.size() - 1) {
+                salesTrendLabels.append(",");
+                salesTrendData.append(",");
             }
         }
-        dataPoints.append("]");
+        salesTrendLabels.append("]");
+        salesTrendData.append("]");
+
+        String abcData = (String) request.getAttribute("abc_classificationData");
+        JsonArray abcArray = JsonParser.parseString(abcData).getAsJsonArray();
+        Map<String, Integer> abcTotals = new HashMap<>();
+
+        for (int i = 0; i < abcArray.size(); i++) {
+            JsonObject obj = abcArray.get(i).getAsJsonObject();
+            abcTotals.put(obj.get("class").getAsString(), 
+                abcTotals.getOrDefault(obj.get("class").getAsString(), 0) + obj.get("product").getAsInt());
+        }
+
+        StringBuilder abcLabels = new StringBuilder("[");
+        StringBuilder abcDataPoints = new StringBuilder("[");
+
+        int count = 0;
+        for (Map.Entry<String, Integer> entry : abcTotals.entrySet()) {
+            abcLabels.append("'Class " + entry.getKey() + "'");
+            abcDataPoints.append(entry.getValue());
+            if (++count < abcTotals.size()) {
+                abcLabels.append(",");
+                abcDataPoints.append(",");
+            }
+        }
+        abcLabels.append("]");
+        abcDataPoints.append("]");
+
+        String profitabilityData = (String) request.getAttribute("profitAnalysis");
+        JsonObject profitabilityObj = JsonParser.parseString(profitabilityData).getAsJsonObject();
+
+        // Check if the keys exist and are of the correct type
+        JsonArray lowProfitProducts = profitabilityObj.has("LowProfitProducts") ? profitabilityObj.getAsJsonArray("LowProfitProducts") : new JsonArray();
+        JsonArray highProfitProducts = profitabilityObj.has("HighProfitProducts") ? profitabilityObj.getAsJsonArray("HighProfitProducts") : new JsonArray();
+
+        StringBuilder profitLabels = new StringBuilder("[");
+        StringBuilder lowProfitData = new StringBuilder("[");
+        StringBuilder highProfitData = new StringBuilder("[");
+
+        // Process Low Profit Products
+        for (int i = 0; i < lowProfitProducts.size(); i++) {
+            JsonObject product = lowProfitProducts.get(i).getAsJsonObject();
+            String productName = product.get("ProductName").getAsString();
+            double profitMargin = product.get("ProfitMargin").getAsDouble();
+
+            profitLabels.append("'").append(productName).append("'");
+            lowProfitData.append(profitMargin);
+
+            if (i < lowProfitProducts.size() - 1) {
+                profitLabels.append(",");
+                lowProfitData.append(",");
+            }
+        }
+
+        // Process High Profit Products
+        for (int i = 0; i < highProfitProducts.size(); i++) {
+            JsonObject product = highProfitProducts.get(i).getAsJsonObject();
+            double profitMargin = product.get("ProfitMargin").getAsDouble();
+
+            highProfitData.append(profitMargin);
+
+            if (i < highProfitProducts.size() - 1) {
+                highProfitData.append(",");
+            }
+        }
+
+        profitLabels.append("]");
+        lowProfitData.append("]");
+        highProfitData.append("]");
+        
+     // Inventory Turnover Data
+        String turnoverData = (String) request.getAttribute("inventoryratioData");
+
+        
+        JsonArray turnoverArray = JsonParser.parseString(turnoverData).getAsJsonArray();
+
+        StringBuilder turnoverLabels = new StringBuilder();
+        StringBuilder turnoverDataPoints = new StringBuilder();
+
+        turnoverLabels.append("[");
+        turnoverDataPoints.append("[");
+
+        for (int i = 0; i < turnoverArray.size(); i++) {
+            JsonObject obj = turnoverArray.get(i).getAsJsonObject();
+            int year = obj.get("Year").getAsInt();
+            double ratio = obj.get("Ratio").getAsDouble();
+
+            turnoverLabels.append("'").append(year).append("'");
+            turnoverDataPoints.append(ratio);
+
+            if (i < turnoverArray.size() - 1) {
+                turnoverLabels.append(",");
+                turnoverDataPoints.append(",");
+            }
+        }
+
+        turnoverLabels.append("]");
+        turnoverDataPoints.append("]");
+
     %>
 
-    <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+    <div class="chart-container">
+        <h2>Monthly Sales Trend Analysis</h2>
+        <canvas id="salesTrendChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>ABC Classification Analysis</h2>
+        <canvas id="abcChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Product Profitability Analysis</h2>
+        <canvas id="profitChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Inventory Turnover Ratio</h2>
+        <canvas id="turnoverChart"></canvas>
+    </div>
+    
+    
 
     <script>
-    window.onload = function() {
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        const salesTrendChart = new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: <%= salesTrendLabels.toString() %>,
+                datasets: [{
+                    label: 'Percentage Change',
+                    data: <%= salesTrendData.toString() %>,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const value = tooltipItem.yLabel;
+                                if (value === null || value === undefined) {
+                                    return 'No data';
+                                }
+                                return value + '%';
+                            }
+                        }
+                    }
 
-        var chart = new CanvasJS.Chart("chartContainer", {
-            theme: "light2",
-            title: {
-                text: "Monthly Sales Trend Analysis"
-            },
-            axisX: {
-                title: "Month",
-                labelAngle: -45
-            },
-            axisY: {
-                title: "Percentage Change",
-                suffix: "%"
-            },
-            data: [{
-                type: "line",
-                markerSize: 5,
-                xValueFormatString: "MMM YYYY",
-                yValueFormatString: "#.##'%'",
-                dataPoints: <%= dataPoints.toString() %>
-            }]
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
         });
-        chart.render();
-    }
+
+        const abcCtx = document.getElementById('abcChart').getContext('2d');
+        const abcChart = new Chart(abcCtx, {
+            type: 'pie',
+            data: {
+                labels: <%= abcLabels.toString() %>,
+                datasets: [{
+                    data: <%= abcDataPoints.toString() %>,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe'],
+                    hoverOffset: 4
+                }]
+            }
+        });
+    
+        
+        const turnoverCtx = document.getElementById('turnoverChart').getContext('2d');
+        const turnoverChart = new Chart(turnoverCtx, {
+            type: 'bar',
+            data: {
+                labels: <%= turnoverLabels.toString() %>,
+                datasets: [{
+                    label: 'Inventory Turnover Ratio',
+                    data: <%= turnoverDataPoints.toString() %>,
+                    backgroundColor: [
+                        '#7cb342', // Green
+                        '#ffeb3b', // Yellow
+                        '#ff9800', // Orange
+                        '#f44336'  // Red
+                    ],
+                    borderColor: [
+                        '#558b2f',
+                        '#fbc02d',
+                        '#e67e22',
+                        '#d32f2f'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#333',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#333',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#ddd'
+                        },
+                        ticks: {
+                            color: '#333',
+                            font: {
+                                size: 14
+                            },
+                            callback: function(value) {
+                                return value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
     </script>
 </body>
 </html>

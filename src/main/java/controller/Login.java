@@ -31,7 +31,7 @@ public class Login extends HttpServlet {
 			if ("Authentication Successful!".equals(result)) {
 				
 				System.out.println("i am here");
-				response.sendRedirect("admin.jsp");
+				response.sendRedirect("admindash.jsp");
 				
 			}else {
 				request.getRequestDispatcher("login.jsp").forward(request, response);

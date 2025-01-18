@@ -57,7 +57,7 @@ public class Admin_dash_op_im  implements Admin_dash{
 		String result = null;
 
 		try {
-			CallableStatement callableStatement = GetConnection.getConnection().prepareCall("SELECT demo_erp.RatioTurnover()");
+			CallableStatement callableStatement = GetConnection.getConnection().prepareCall("SELECT demo_erp.RatioTurnoverYearly()");
 
 			ResultSet rs = callableStatement.executeQuery();
 

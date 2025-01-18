@@ -36,16 +36,18 @@ public class Admin_Dash extends HttpServlet {
         // Fetch sales trend data
         String salesTrendData = pojo.getSalesTrend();
         request.setAttribute("salesTrendData", salesTrendData);
-        request.getRequestDispatcher("salesTrend.jsp").forward(request, response);
+        
         
         String abc_classificationData = pojo.getAbcClassification();
         request.setAttribute("abc_classificationData", abc_classificationData);
         
-        String inventoryratioData = pojo.getInventoryRatio();
-        request.setAttribute("inventoryratioData", inventoryratioData);
-        
         String profitAnalysisData = pojo.getProfitAnalysis();
         request.setAttribute("profitAnalysis", profitAnalysisData);
+        
+     
+        String inventoryratioData = pojo.getInventoryRatio();
+        request.setAttribute("inventoryratioData", inventoryratioData);
+        request.getRequestDispatcher("salesTrend.jsp").forward(request, response);
         
 	}
 	
